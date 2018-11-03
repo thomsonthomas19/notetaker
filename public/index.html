@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
+  <link rel="stylesheet" href="style.css">
+  <title>Note Taker</title>
+  <style>
+    body {
+background-image: url("Assets/Images/floral.png");
+}
+
+.addNote {
+  border-bottom-style: solid;
+    border-bottom-width: 2px;
+    border-bottom-color: black;
+}
+</style>
+</head>
+
+<body>
+  <nav class="navbar navbar-info bg-info">
+    <a class="navbar-brand text-dark" href="/">Note Taker
+    </a>
+    <!-- <div class="icons">
+      <i class="fas fa-save text-light save-note px-3"></i>
+      <i class="fas fa-pen text-light new-note px-3"></i>
+    </div> -->
+  </nav>
+  <div class="mx-auto py-3 text-center addNote">
+    <input class="py-2 text-center" id="note-name" type="text" placeholder="Note Title">
+    <br>
+    <br>
+    <textarea class="py-2 text-center" id="note-content" placeholder="Note Text"></textarea>
+    <br>
+    <br>
+    <button type="submit" class="btn btn-info" id="submit-btn">Submit</button>
+  </div>
+  <div class="container">
+    <div class="row" id="currentNotes">
+      <div class="col-3 text-center px-auto my-2">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's
+              content.</p>
+            <a href="#" class="card-link delete" id="delete-btn">Delete Note</a>
+          </div>
+        </div>
+      </div>
+
+
+
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.13.0/umd/popper.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"></script>
+  <script type="text/javascript">
+
+    // In this code, jQuery is used to "download" the data from our server
+    // We then dynamically display this content in our table. This is very similar to the group projects you just completed.
+    // It's also very similar to the NYT search application. In fact, I copied a ton of code from there.
+
+    function runTableQuery() {
+      // The AJAX function uses the URL of our API to GET the data associated with it (initially set to localhost)
+      $.ajax({ url: "/api/notes", method: "GET" })
+        .then(function (noteData) {
+
+          // Here we then log the tableData to console, where it will show up as an object.
+          console.log(noteData);
+          console.log("------------------------------------");
+
+          // Loop through and display each of the customers
+          for (var i = 0; i < noteData.length; i++) {
+
+
+
+            var noteKeeper = $("#currentNotes");
+
+            noteKeeper.append(`
+              <div class="col-3 text-center px-auto my-2">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">${noteData[i].noteTitle}</h5>
+                    <p class="card-text">${noteData[i].note}</p>
+                    <a href="#" data-id="${noteData[i].id}" class="card-link delquote">Delete Note</a>
+                  </div>
+                </div>
+              </div>`
+            );
+          }
+        });
+    }
+
+    $("#submit-btn").on("click", function (event) {
+      event.preventDefault();
+      var newNote = {
+        noteTitle: $("#note-name").val().trim(),
+        note: $("#note-content").val().trim(),
+      };
+
+      // Question: What does this code do??
+      $.ajax({
+        url: "/api/notes",
+        method: "POST",
+        data: newNote
+      })
+        .then(function (data) {
+          console.log("Note added to database!");
+          $("#note-name").val("");
+          $("#note-content").val("");
+          location.reload();
+        });
+    });
+
+    $(document).on("click", ".delquote", function (event) {
+      console.log("firing");
+      var id = $(this).attr("data-id");
+
+      // Send the DELETE request.
+      $.ajax("/api/notes/" + id, {
+        type: "DELETE"
+      }).then(
+        function () {
+          console.log("deleted id ", id);
+          // Reload the page to get the updated list
+          location.reload();
+        }
+      );
+    });
+
+    // Question: What does this code do??
+    // $.ajax({
+    //   url: "/api/notes",
+    //   method: "POST",
+    //   data: newNote
+    // })
+    //   .then(function (data) {
+    //     alert("Note added to database!");
+    //     $("#note-name").val("");
+    //     $("#note-content").val("");
+    //     location.reload();
+    //   });
+
+
+    // // This function resets all of the data in our tables. This is intended to let you restart a demo.
+    // function clearTable() {
+    //   alert("Clearing...");
+
+    //   // Clear the tables on the server and then empty the elements on the client
+    //   $.ajax({ url: "/api/notes", method: "DELETE" }).then(function () {
+    //     // $("#waitList").empty();
+    //     // $("#tableList").empty();
+    //   });
+    // }
+
+
+
+    // Run Queries!
+    // ==========================================
+    runTableQuery();
+
+
+
+  </script>
+</body>
+
+</html>
